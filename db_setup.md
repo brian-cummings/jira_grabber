@@ -1,3 +1,3 @@
 create table Issue(Summary varchar(255), IssueKey varchar(20) primary key, IssueType varchar(50), Status varchar(50), ProjectKey varchar(20), EpicLink varchar(20),Resolution varchar(50), Created datetime, Updated datetime, Resolved datetime, SystemModified datetime);
 
-create table WorkLog(Id integer primary key, IssueKey varchar(20), Comment varchar, LogDate datetime, Worker varchar(50), SecondsWorked bigint, SystemModified datetime);
+create table WorkLog(Id integer primary key, IssueKey varchar(20), Comment varchar, LogDate datetime, WorkDate datetime, Worker varchar(50), SecondsWorked bigint, SystemModified datetime);
