@@ -3,7 +3,7 @@ import jira_model
 import configparser
 
 
-def load_issues():
+def load_issues(jql):
     success: bool = None
     try:
         # Assign Jira configuration
@@ -22,7 +22,7 @@ def load_issues():
         while start_point < stop_point:
 
             # Get issues with JQL
-            all_issues = jira.search_issues('project in (PP, ITAR, ITARC, ITACDC) and updated >= -1w',
+            all_issues = jira.search_issues(jql_str=jql,
                                             maxResults=max_results,
                                             startAt=start_point,
                                             fields='key,summary,issuetype,status,project,customfield_10118,'
