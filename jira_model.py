@@ -77,3 +77,19 @@ def return_keys(period):
     finally:
         return results
         db_conn.close()
+
+def return_last_update():
+    db_conn = psycopg2.connect("dbname={} user={} password={}".format(database, user, password))
+    db_cursor = db_conn.cursor()
+    try:
+        db_cursor.execute("""SELECT MAX(Updated) as max_updated FROM ISSUE;""")
+
+        for max_updated, in db_cursor:
+            results = max_updated
+    except db_conn.Error:
+        results = 'failure'
+        raise
+
+    finally:
+        return results
+        db_conn.close()
