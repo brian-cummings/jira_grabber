@@ -46,7 +46,7 @@ def load_issues():
                     resolution = None
 
                 issue_load = jira_model.insert_issue(issue.fields.summary, issue.key, issue_type, status,
-                                                     issue.fields.project.name, issue.fields.customfield_10118,
+                                                     issue.fields.project.key, issue.fields.customfield_10118,
                                                      resolution,
                                                      issue.fields.created, issue.fields.updated,
                                                      issue.fields.resolutiondate)

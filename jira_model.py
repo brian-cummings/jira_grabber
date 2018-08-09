@@ -1,60 +1,76 @@
-import sqlite3
-from datetime import datetime
+import psycopg2
+import datetime
+import configparser
+import pytz
 
+p_config = configparser.ConfigParser()
+p_config.read('config.ini')
+user = p_config['postgresql']['user']
+host = p_config['postgresql']['host']
+database = p_config['postgresql']['database']
+password = p_config['postgresql']['password']
 
 def insert_issue(summary, issue_key, issue_type, status, project_key, epic_link, resolution, created, updated,
                  resolved):
-    db_loc = 'jira.sqlite'
-    db_conn = sqlite3.connect(db_loc)
-    curr_datetime = datetime.now()
-
     try:
-        db_conn.execute("""INSERT INTO ISSUE (Summary, IssueKey, IssueType, Status, ProjectKey, EpicLink, Resolution, Created, 
-                            Updated, Resolved, SystemModified)
-                            VALUES (?,?,?,?,?,?,?,?,?,?,?);""",
-                        (summary, issue_key, issue_type, status, project_key, epic_link,
-                         resolution, created, updated, resolved, curr_datetime))
-    except sqlite3.IntegrityError:
-        db_conn.execute("""UPDATE ISSUE SET Summary = ?, IssueType = ?, Status = ?, ProjectKey = ?, EpicLink = ?, 
-                        Resolution = ?, Created = ?, Updated = ?, Resolved = ?, SystemModified = ? WHERE IssueKey = ?;""",
-                        (summary, issue_type, status, project_key, epic_link, resolution,
-                         created, updated, resolved, curr_datetime, issue_key))
+        utc_datetime = pytz.utc.localize(datetime.datetime.utcnow())
+        curr_datetime = utc_datetime.astimezone(pytz.timezone("America/New_York"))
 
-    finally:
+        table = 'issue'
+        db_conn = psycopg2.connect("dbname={} user={} password={}".format(database, user, password))
+        db_cursor = db_conn.cursor()
+        insert_sql = """INSERT INTO Issue (Summary, IssueKey, IssueType, Status, ProjectKey, EpicLink, Resolution, 
+                                Created, Updated, Resolved, SystemModified)
+                                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                                ON CONFLICT (IssueKey) DO UPDATE SET
+                                (Summary, IssueType, Status, ProjectKey, EpicLink, Resolution, 
+                                Created, Updated, Resolved, SystemModified) =
+                                (Excluded.Summary, Excluded.IssueType, Excluded.Status, Excluded.ProjectKey, Excluded.EpicLink, Excluded.Resolution, 
+                                Excluded.Created, Excluded.Updated, Excluded.Resolved, Excluded.SystemModified);"""
+
+        insert_data = (summary, issue_key, issue_type, status, project_key, epic_link, resolution, created, updated,
+                       resolved, curr_datetime)
+        print(insert_data)
+        db_cursor.execute(insert_sql, insert_data)
         db_conn.commit()
+    except db_conn.Error:
+        db_conn.rollback()
+    finally:
+
         db_conn.close()
     return
 
 
 def insert_worklog(id, issue_key, comment, log_date, work_date, worker, seconds_worked):
-    db_loc = 'jira.sqlite'
-    db_conn = sqlite3.connect(db_loc)
-    curr_datetime = datetime.now()
+    db_conn = psycopg2.connect("dbname={} user={} password={}".format(database, user, password))
+    db_cursor = db_conn.cursor()
+    utc_datetime = pytz.utc.localize(datetime.datetime.utcnow())
+    curr_datetime = utc_datetime.astimezone(pytz.timezone("America/New_York"))
 
     try:
-        db_conn.execute("""INSERT INTO WORKLOG (Id, IssueKey, Comment, LogDate, WorkDate, Worker, SecondsWorked, SystemModified)
-                            VALUES (?,?,?,?,?,?,?,?);""",
+        db_cursor.execute("""INSERT INTO WORKLOG (Id, IssueKey, Comment, LogDate, WorkDate, Worker, SecondsWorked, 
+        SystemModified) VALUES (%s,%s,%s,%s,%s,%s,%s,%s) ON CONFLICT (Id) DO UPDATE SET (IssueKey, Comment, LogDate, 
+        WorkDate, Worker, SecondsWorked, SystemModified) = (Excluded.IssueKey, Excluded.Comment, 
+        Excluded.LogDate, Excluded.WorkDate, Excluded.Worker, Excluded.SecondsWorked, Excluded.SystemModified);""",
                         (id, issue_key, comment, log_date, work_date, worker, seconds_worked, curr_datetime))
-    except sqlite3.IntegrityError:
-        db_conn.execute("""UPDATE WORKLOG SET Id = ?, IssueKey = ?, Comment = ?, LogDate = ?, WorkDate = ?, Worker = ?, 
-                        SecondsWorked = ?, SystemModified = ? WHERE Id = ? AND IssueKey = ?;""",
-                        (id, issue_key, comment, log_date, work_date, worker, seconds_worked, curr_datetime, id, issue_key))
-
-    finally:
         db_conn.commit()
+
+    except db_conn.Error:\
+        db_conn.rollback()
+     
+    finally:
         db_conn.close()
     return
 
 
-def return_keys():
-    db_loc = 'jira.sqlite'
-    db_conn = sqlite3.connect(db_loc)
-    db_cur = db_conn.cursor()
-
+def return_keys(period):
+    db_conn = psycopg2.connect("dbname={} user={} password={}".format(database, user, password))
+    db_cursor = db_conn.cursor()
     try:
-        db_cur.execute("""SELECT IssueKey FROM ISSUE WHERE Updated >= date('now','-7 day');""")
-        results = db_cur.fetchall()
-    except:
+        db_cursor.execute("""SELECT IssueKey FROM ISSUE WHERE Updated >= now() - interval %s;""",
+                          (period,))
+        results = db_cursor.fetchall()
+    except db_conn.Error:
         results = 'failure'
         raise
 
