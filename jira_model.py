@@ -55,7 +55,7 @@ def insert_worklog(id, issue_key, comment, log_date, work_date, worker, seconds_
                         (id, issue_key, comment, log_date, work_date, worker, seconds_worked, curr_datetime))
         db_conn.commit()
 
-    except db_conn.Error:\
+    except db_conn.Error:
         db_conn.rollback()
      
     finally:

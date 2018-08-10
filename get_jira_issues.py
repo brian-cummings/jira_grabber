@@ -4,7 +4,7 @@ import configparser
 
 
 def load_issues(jql):
-    success: bool = None
+    success = None
     try:
         # Assign Jira configuration
         j_config = configparser.ConfigParser()
