@@ -4,7 +4,7 @@ import configparser
 
 
 def load_worklog(issue_key):
-    success: bool = None
+    success = None
     try:
         # Assign Jira configuration
         j_config = configparser.ConfigParser()
