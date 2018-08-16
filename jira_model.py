@@ -17,7 +17,7 @@ def insert_issue(summary, issue_key, issue_type, status, project_key, epic_link,
         curr_datetime = utc_datetime.astimezone(pytz.timezone("America/New_York"))
 
         table = 'issue'
-        db_conn = psycopg2.connect("dbname={} user={} password={}".format(database, user, password))
+        db_conn = psycopg2.connect("host={} dbname={} user={} password={}".format(host, database, user, password))
         db_cursor = db_conn.cursor()
         insert_sql = """INSERT INTO Issue (Summary, IssueKey, IssueType, Status, ProjectKey, EpicLink, Resolution, 
                                 Created, Updated, Resolved, SystemModified)
@@ -42,7 +42,7 @@ def insert_issue(summary, issue_key, issue_type, status, project_key, epic_link,
 
 
 def insert_worklog(id, issue_key, comment, log_date, work_date, worker, seconds_worked):
-    db_conn = psycopg2.connect("dbname={} user={} password={}".format(database, user, password))
+    db_conn = psycopg2.connect("host={} dbname={} user={} password={}".format(host, database, user, password))
     db_cursor = db_conn.cursor()
     utc_datetime = pytz.utc.localize(datetime.datetime.utcnow())
     curr_datetime = utc_datetime.astimezone(pytz.timezone("America/New_York"))
@@ -64,14 +64,13 @@ def insert_worklog(id, issue_key, comment, log_date, work_date, worker, seconds_
 
 
 def return_keys(period):
-    db_conn = psycopg2.connect("dbname={} user={} password={}".format(database, user, password))
+    db_conn = psycopg2.connect("host={} dbname={} user={} password={}".format(host, database, user, password))
     db_cursor = db_conn.cursor()
     try:
         db_cursor.execute("""SELECT IssueKey FROM ISSUE WHERE Updated >= now() - interval %s;""",
                           (period,))
         results = db_cursor.fetchall()
     except db_conn.Error:
-        results = 'failure'
         raise
 
     finally:
@@ -79,7 +78,7 @@ def return_keys(period):
         db_conn.close()
 
 def return_last_update():
-    db_conn = psycopg2.connect("dbname={} user={} password={}".format(database, user, password))
+    db_conn = psycopg2.connect("host={} dbname={} user={} password={}".format(host, database, user, password))
     db_cursor = db_conn.cursor()
     try:
         db_cursor.execute("""SELECT MAX(Updated) as max_updated FROM ISSUE;""")
@@ -87,7 +86,6 @@ def return_last_update():
         for max_updated, in db_cursor:
             results = max_updated
     except db_conn.Error:
-        results = 'failure'
         raise
 
     finally:
