@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import datetime
+# Use this module if running a sqlite database
 
 
 def insert_issue(summary, issue_key, issue_type, status, project_key, epic_link, resolution, created, updated,

@@ -1,12 +1,15 @@
 from jira import JIRA
 import jira_model
 import configparser
+import logging
 
+logger = logging.getLogger("jiraLogger")
 
 def load_issues(jql):
     success = None
     try:
         # Assign Jira configuration
+        logging.info("Getting configuration")
         j_config = configparser.ConfigParser()
         j_config.read('config.ini')
         username = j_config['jira_config']['username']
@@ -28,6 +31,7 @@ def load_issues(jql):
                                             fields='key,summary,issuetype,status,project,customfield_10118,'
                                                    'resolution,created,updated,resolutiondate')
             stop_point = all_issues.total
+            logging.info("Fetcing {} issues".format(stop_point))
 
             for issue in all_issues:
                 if hasattr(issue.fields.issuetype, "name"):

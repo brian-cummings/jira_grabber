@@ -1,7 +1,9 @@
 from jira import JIRA
 import jira_model
 import configparser
+import logging
 
+logger = logging.getLogger("jiraLogger")
 
 def load_worklog(issue_key):
     success = None
@@ -31,6 +33,7 @@ def load_worklog(issue_key):
                 comment = None
             updated = w.updated
             id = w.id
+            logger.info("{}: {} seconds tracked".format(issue_key,time_spent))
             jira_model.insert_worklog(id,issue_key,comment,created,started,author,time_spent)
 
         success = True

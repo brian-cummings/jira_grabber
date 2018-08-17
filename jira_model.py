@@ -2,6 +2,9 @@ import psycopg2
 import datetime
 import configparser
 import pytz
+import logging
+
+logging.getLogger("jiraLogger")
 
 p_config = configparser.ConfigParser()
 p_config.read('config.ini')
@@ -9,6 +12,7 @@ user = p_config['postgresql']['user']
 host = p_config['postgresql']['host']
 database = p_config['postgresql']['database']
 password = p_config['postgresql']['password']
+
 
 def insert_issue(summary, issue_key, issue_type, status, project_key, epic_link, resolution, created, updated,
                  resolved):
@@ -30,7 +34,7 @@ def insert_issue(summary, issue_key, issue_type, status, project_key, epic_link,
 
         insert_data = (summary, issue_key, issue_type, status, project_key, epic_link, resolution, created, updated,
                        resolved, curr_datetime)
-        print(insert_data)
+        logging.info("Inserting {}".format(insert_data))
         db_cursor.execute(insert_sql, insert_data)
         db_conn.commit()
     except db_conn.Error:
@@ -52,12 +56,12 @@ def insert_worklog(id, issue_key, comment, log_date, work_date, worker, seconds_
         SystemModified) VALUES (%s,%s,%s,%s,%s,%s,%s,%s) ON CONFLICT (Id) DO UPDATE SET (IssueKey, Comment, LogDate, 
         WorkDate, Worker, SecondsWorked, SystemModified) = (Excluded.IssueKey, Excluded.Comment, 
         Excluded.LogDate, Excluded.WorkDate, Excluded.Worker, Excluded.SecondsWorked, Excluded.SystemModified);""",
-                        (id, issue_key, comment, log_date, work_date, worker, seconds_worked, curr_datetime))
+                          (id, issue_key, comment, log_date, work_date, worker, seconds_worked, curr_datetime))
         db_conn.commit()
 
     except db_conn.Error:
         db_conn.rollback()
-     
+
     finally:
         db_conn.close()
     return
@@ -77,6 +81,7 @@ def return_keys(period):
         return results
         db_conn.close()
 
+
 def return_last_update():
     db_conn = psycopg2.connect("host={} dbname={} user={} password={}".format(host, database, user, password))
     db_cursor = db_conn.cursor()
@@ -85,6 +90,8 @@ def return_last_update():
 
         for max_updated, in db_cursor:
             results = max_updated
+        if results == None:
+            results = 9999
     except db_conn.Error:
         raise
 
