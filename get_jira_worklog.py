@@ -19,9 +19,9 @@ def load_worklog(issue_key):
         jira = JIRA(server,
                     basic_auth=(username, secret_token))
 
-        issue = jira.issue(issue_key).fields.worklog.worklogs
+        worklogs = jira.worklogs(issue_key)
 
-        for w in issue:
+        for w in worklogs:
 
             time_spent = w.timeSpentSeconds
             author = w.author.name
