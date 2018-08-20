@@ -35,9 +35,7 @@ logger.info("Looking for updates in the past {} days".format(days_since_update))
 
 if user_issue_key is None:
     if days_since_update > 0:
-        get_jira_issues.load_issues('project in (PP, ITAR, ITARC, ITACDC, '
-                                    'ESITI, ITSV, SRT, SQL, EP) and updated >= -{}d'
-                                    .format(days_since_update))
+        get_jira_issues.load_issues('updated >= -{}d'.format(days_since_update))
 
         issue_key_results = jira_model.return_keys('{} day'.format(days_since_update))
 
