@@ -57,7 +57,7 @@ def return_keys():
         results = db_cur.fetchall()
     except:
         results = 'failure'
-        raise
+        logger.exception("Message")
 
     finally:
         return results

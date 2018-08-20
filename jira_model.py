@@ -75,7 +75,7 @@ def return_keys(period):
                           (period,))
         results = db_cursor.fetchall()
     except db_conn.Error:
-        raise
+        logger.exception("Message")
 
     finally:
         return results
@@ -93,7 +93,7 @@ def return_last_update():
         if results == None:
             results = 9999
     except db_conn.Error:
-        raise
+        logger.exception("Message")
 
     finally:
         return results

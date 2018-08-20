@@ -41,7 +41,7 @@ def load_worklog(issue_key):
 
     except:
         success = False
-        raise
+        logger.exception("Message")
 
     finally:
         return success

@@ -9,6 +9,10 @@ from logging.handlers import TimedRotatingFileHandler
 log_file = "../logs/jira.log"
 logger = logging.getLogger("jiraLogger")
 logger.setLevel(logging.INFO)
+handler = TimedRotatingFileHandler(log_file, when="D", interval=1, backupCount=7)
+handler.doRollover()
+logger.addHandler(handler)
+
 parser = argparse.ArgumentParser(__file__)
 parser.add_argument('-d',metavar='days', dest='days', help='Days to retrieve', type=int)
 parser.add_argument('-i',metavar='issue key', dest='issue_key', help='Jira issue key', type=str)
@@ -16,8 +20,6 @@ args = parser.parse_args()
 user_days = args.days
 user_issue_key = args.issue_key
 
-handler = TimedRotatingFileHandler(log_file, when="D", interval=1, backupCount=7)
-logger.addHandler(handler)
 curr_date = datetime.datetime.date(datetime.datetime.now())
 if user_days is None:
     user_days = -1

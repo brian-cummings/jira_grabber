@@ -59,6 +59,6 @@ def load_issues(jql):
         success = True
     except:
         success = False
-        raise
+        logger.exception("Message")
     finally:
         return success
