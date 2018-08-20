@@ -6,7 +6,6 @@ import logging
 logger = logging.getLogger("jiraLogger")
 
 def load_worklog(issue_key):
-    success = None
     try:
         # Assign Jira configuration
         j_config = configparser.ConfigParser()
@@ -36,12 +35,10 @@ def load_worklog(issue_key):
             logger.info("{}: {} seconds tracked".format(issue_key,time_spent))
             jira_model.insert_worklog(id,issue_key,comment,created,started,author,time_spent)
 
-        success = True
-        return time_spent
+        return
 
     except:
-        success = False
         logger.exception("Message")
 
     finally:
-        return success
+        return

@@ -4,7 +4,7 @@ import configparser
 import pytz
 import logging
 
-logger.exception("Message")
+logger = logging.getLogger("jiraLogger")
 
 p_config = configparser.ConfigParser()
 p_config.read('config.ini')
