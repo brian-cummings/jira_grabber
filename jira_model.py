@@ -19,6 +19,7 @@ def insert_issue(summary, issue_key, issue_type, status, project_key, epic_link,
     try:
         utc_datetime = pytz.utc.localize(datetime.datetime.utcnow())
         curr_datetime = utc_datetime.astimezone(pytz.timezone("America/New_York"))
+        issue_key = (issue_key).upper()
 
         table = 'issue'
         db_conn = psycopg2.connect("host={} dbname={} user={} password={}".format(host, database, user, password))
@@ -50,6 +51,7 @@ def insert_worklog(id, issue_key, comment, log_date, work_date, worker, seconds_
     db_cursor = db_conn.cursor()
     utc_datetime = pytz.utc.localize(datetime.datetime.utcnow())
     curr_datetime = utc_datetime.astimezone(pytz.timezone("America/New_York"))
+    issue_key = (issue_key).upper()
 
     try:
         db_cursor.execute("""INSERT INTO WORKLOG (Id, IssueKey, Comment, LogDate, WorkDate, Worker, SecondsWorked, 
