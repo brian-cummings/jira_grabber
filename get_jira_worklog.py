@@ -32,7 +32,7 @@ def load_worklog(issue_key):
                 comment = None
             updated = w.updated
             id = w.id
-            logger.info("{}: {} seconds tracked".format(issue_key,time_spent))
+            logger.info("{}: {} seconds tracked on worklog #{}".format(issue_key,time_spent,id))
             jira_model.insert_worklog(id,issue_key,comment,created,started,author,time_spent)
 
         return

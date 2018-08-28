@@ -11,7 +11,7 @@ from logging.handlers import TimedRotatingFileHandler
 log_file = "../logs/jira.log"
 logger = logging.getLogger("jiraLogger")
 logger.setLevel(logging.INFO)
-handler = TimedRotatingFileHandler(log_file, when="D", interval=1, backupCount=7)
+handler = TimedRotatingFileHandler(log_file, when="H", interval=1, backupCount=24)
 handler.doRollover()
 logger.addHandler(handler)
 
@@ -26,7 +26,7 @@ utc_datetime = pytz.utc.localize(datetime.datetime.utcnow())
 curr_datetime = utc_datetime.astimezone(pytz.timezone("America/New_York"))
 if user_hours is None:
     user_hours = -1
-    logger.info("Retrieving most recent updates from db")
+    logger.info("Retrieving most recent updates from db [{}]".format(curr_datetime))
     last_updated = jira_model.return_last_update()
     hours_since_update = math.ceil((curr_datetime - last_updated).total_seconds() / 3600)
 
@@ -47,11 +47,15 @@ if user_issue_key is None:
         for i in issue_key_results:
             logger.info("Getting worklog for {}".format(i[0]))
             get_jira_worklog.load_worklog(i[0])
+            logger.info("Worklog for {} completed".format(i[0]))
 
     else:
         logger.info("Too soon to check for updates")
 else:
-        get_jira_worklog.load_worklog(user_issue_key)
         logger.info("Getting user specified worklog for {}".format(user_issue_key))
+        get_jira_worklog.load_worklog(user_issue_key)
+        logger.info("User specified worklog for {} completed".format(user_issue_key))
 
-logger.info("Process complete")
+utc_finish_datetime = pytz.utc.localize(datetime.datetime.utcnow())
+finish_datetime = utc_finish_datetime.astimezone(pytz.timezone("America/New_York"))
+logger.info("Process complete [{}]".format(finish_datetime))
