@@ -56,7 +56,7 @@ def load_issues(jql):
                                                      issue.fields.created, issue.fields.updated,
                                                      issue.fields.resolutiondate)
 
-            start_point = start_point + max_results + 1
+            start_point = start_point + max_results
         success = True
     except:
         success = False
