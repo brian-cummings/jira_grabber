@@ -13,6 +13,7 @@ logger = logging.getLogger("jiraLogger")
 logger.setLevel(logging.INFO)
 handler = TimedRotatingFileHandler(log_file, when="H", interval=1, backupCount=24)
 logger.addHandler(handler)
+handler.doRollover()
 
 parser = argparse.ArgumentParser(__file__)
 parser.add_argument('-t',metavar='hours', dest='hours', help='Time in hours to retrieve', type=int)
@@ -58,4 +59,3 @@ else:
 utc_finish_datetime = pytz.utc.localize(datetime.datetime.utcnow())
 finish_datetime = utc_finish_datetime.astimezone(pytz.timezone("America/New_York"))
 logger.info("Process complete [{}]".format(finish_datetime))
-handler.doRollover()

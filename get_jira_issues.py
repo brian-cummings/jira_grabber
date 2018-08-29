@@ -31,7 +31,8 @@ def load_issues(jql):
                                             fields='key,summary,issuetype,status,project,customfield_10118,'
                                                    'resolution,created,updated,resolutiondate')
             stop_point = all_issues.total
-            logger.info("Fetching {} issues".format(stop_point))
+            logger.info("Fetching {} - {} of {} issues".format(start_point, min(start_point + max_results, stop_point),
+                                                               stop_point))
 
             for issue in all_issues:
                 if hasattr(issue.fields.issuetype, "name"):
@@ -55,7 +56,7 @@ def load_issues(jql):
                                                      issue.fields.created, issue.fields.updated,
                                                      issue.fields.resolutiondate)
 
-            start_point += max_results
+            start_point = start_point + max_results + 1
         success = True
     except:
         success = False

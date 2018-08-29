@@ -35,13 +35,12 @@ def insert_issue(summary, issue_key, issue_type, status, project_key, epic_link,
 
         insert_data = (summary, issue_key, issue_type, status, project_key, epic_link, resolution, created, updated,
                        resolved, curr_datetime)
-        logging.info("Inserting {}".format(insert_data))
         db_cursor.execute(insert_sql, insert_data)
         db_conn.commit()
     except db_conn.Error:
         db_conn.rollback()
+        logger.exception("Message")
     finally:
-
         db_conn.close()
     return
 
@@ -63,7 +62,7 @@ def insert_worklog(id, issue_key, comment, log_date, work_date, worker, seconds_
 
     except db_conn.Error:
         db_conn.rollback()
-
+        logger.exception("Message")
     finally:
         db_conn.close()
     return
@@ -78,7 +77,6 @@ def return_keys(period):
         results = db_cursor.fetchall()
     except db_conn.Error:
         logger.exception("Message")
-
     finally:
         return results
         db_conn.close()
@@ -96,7 +94,6 @@ def return_last_update():
             results = 9999
     except db_conn.Error:
         logger.exception("Message")
-
     finally:
         return results
         db_conn.close()
