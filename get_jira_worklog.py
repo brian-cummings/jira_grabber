@@ -41,4 +41,5 @@ def load_worklog(issue_key):
         logger.exception("Message")
 
     finally:
+        jira.close()
         return

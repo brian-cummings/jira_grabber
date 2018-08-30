@@ -2,6 +2,7 @@ import datetime
 import pytz
 import math
 import get_jira_issues
+import get_jira_users
 import jira_model
 import get_jira_worklog
 import argparse
@@ -16,11 +17,13 @@ logger.addHandler(handler)
 handler.doRollover()
 
 parser = argparse.ArgumentParser(__file__)
-parser.add_argument('-t',metavar='hours', dest='hours', help='Time in hours to retrieve', type=int)
-parser.add_argument('-i',metavar='issue key', dest='issue_key', help='Jira issue key', type=str)
+parser.add_argument('-t', dest='hours', help='Time in hours to retrieve', type=int)
+parser.add_argument('-i', dest='issue_key', help='Jira issue key', type=str)
+parser.add_argument('-s', dest='skip_update', help='Skip user update', action='store_true')
 args = parser.parse_args()
 user_hours = args.hours
 user_issue_key = args.issue_key
+user_skip_update = args.skip_update
 
 utc_datetime = pytz.utc.localize(datetime.datetime.utcnow())
 curr_datetime = utc_datetime.astimezone(pytz.timezone("America/New_York"))
@@ -55,6 +58,9 @@ else:
         logger.info("Getting user specified worklog for {}".format(user_issue_key))
         get_jira_worklog.load_worklog(user_issue_key)
         logger.info("User specified worklog for {} completed".format(user_issue_key))
+
+if user_skip_update == False:
+    get_jira_users.load_users()
 
 utc_finish_datetime = pytz.utc.localize(datetime.datetime.utcnow())
 finish_datetime = utc_finish_datetime.astimezone(pytz.timezone("America/New_York"))

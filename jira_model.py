@@ -97,3 +97,23 @@ def return_last_update():
     finally:
         return results
         db_conn.close()
+
+def insert_user(id, display_name, email, active):
+    db_conn = psycopg2.connect("host={} dbname={} user={} password={}".format(host, database, user, password))
+    db_cursor = db_conn.cursor()
+    utc_datetime = pytz.utc.localize(datetime.datetime.utcnow())
+    curr_datetime = utc_datetime.astimezone(pytz.timezone("America/New_York"))
+    id = id.lower()
+
+    try:
+        db_cursor.execute("""INSERT INTO JIRAUSER (id, displayname, email, active, updated) VALUES (%s,%s,%s,%s,%s) 
+        ON CONFLICT (id) DO UPDATE SET (id, displayname, email, active, updated) = (Excluded.id, Excluded.displayname, 
+        Excluded.email, Excluded.active, Excluded.updated);""", (id, display_name, email, active, curr_datetime))
+        db_conn.commit()
+
+    except db_conn.Error:
+        db_conn.rollback()
+        logger.exception("Message")
+    finally:
+        db_conn.close()
+    return

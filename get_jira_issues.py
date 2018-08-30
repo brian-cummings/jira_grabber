@@ -9,7 +9,6 @@ def load_issues(jql):
     success = None
     try:
         # Assign Jira configuration
-        logger.info("Getting configuration")
         j_config = configparser.ConfigParser()
         j_config.read('config.ini')
         username = j_config['jira_config']['username']
@@ -50,7 +49,7 @@ def load_issues(jql):
                 else:
                     resolution = None
 
-                issue_load = jira_model.insert_issue(issue.fields.summary, issue.key, issue_type, status,
+                jira_model.insert_issue(issue.fields.summary, issue.key, issue_type, status,
                                                      issue.fields.project.key, issue.fields.customfield_10118,
                                                      resolution,
                                                      issue.fields.created, issue.fields.updated,
@@ -62,4 +61,5 @@ def load_issues(jql):
         success = False
         logger.exception("Message")
     finally:
+        jira.close()
         return success
