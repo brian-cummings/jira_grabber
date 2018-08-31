@@ -5,6 +5,7 @@ import logging
 
 logger = logging.getLogger("jiraLogger")
 
+
 def load_users():
     j_config = configparser.ConfigParser()
     j_config.read('config.ini')
@@ -16,18 +17,16 @@ def load_users():
     jira = JIRA(server,
                 basic_auth=(username, secret_token))
     start_point = 0
-    stop_point = 99999
+    load = 999
     max_results = 200
 
     try:
-        while start_point < stop_point:
+        while load >= max_results:
             users = jira.search_users(user='%',startAt=start_point,includeInactive=True,maxResults=max_results)
-            stop_point = users.total
-            logger.info("Fetching {} - {} of {} users".format(start_point, min(start_point + max_results, stop_point),
-                                                              stop_point))
+            load = sum(1 for e in users)
+            logger.info("Fetching users {} - {}".format(start_point, start_point + load))
 
             for u in users:
-                print(u.name, u.displayName, u.emailAddress, u.active)
                 jira_model.insert_user(u.name, u.displayName, u.emailAddress, u.active)
 
             start_point = start_point + max_results
@@ -36,3 +35,6 @@ def load_users():
     finally:
         jira.close()
         return
+
+if __name__ == "__main__":
+    load_users()
