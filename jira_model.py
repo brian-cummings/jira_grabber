@@ -68,6 +68,22 @@ def insert_worklog(id, issue_key, comment, log_date, work_date, worker, seconds_
     return
 
 
+def delete_worklog(issue_key):
+    db_conn = psycopg2.connect("host={} dbname={} user={} password={}".format(host, database, user, password))
+    db_cursor = db_conn.cursor()
+    issue_key = (issue_key).upper()
+
+    try:
+        db_cursor.execute("""DELETE FROM WORKLOG WHERE IssueKey = %s""", (issue_key,))
+        db_conn.commit()
+
+    except db_conn.Error:
+        db_conn.rollback()
+        logger.exception("Message")
+    finally:
+        db_conn.close()
+    return
+
 def return_keys(period):
     db_conn = psycopg2.connect("host={} dbname={} user={} password={}".format(host, database, user, password))
     db_cursor = db_conn.cursor()
@@ -97,6 +113,7 @@ def return_last_update():
     finally:
         return results
         db_conn.close()
+
 
 def insert_user(id, display_name, email, active):
     db_conn = psycopg2.connect("host={} dbname={} user={} password={}".format(host, database, user, password))
