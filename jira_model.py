@@ -134,3 +134,19 @@ def insert_user(id, display_name, email, active):
     finally:
         db_conn.close()
     return
+
+
+def return_worklogs(worker,days):
+    db_conn = psycopg2.connect("host={} dbname={} user={} password={}".format(host, database, user, password))
+    db_cursor = db_conn.cursor()
+    try:
+        db_cursor.execute("""SELECT workdate::date, round(sum(secondsworked)/3600,1) as hoursworked FROM 
+        worklog WHERE worker = %s AND workdate >= now() - interval %s 
+        GROUP BY workdate::date;""", (worker, days))
+        results = db_cursor.fetchall()
+
+    except db_conn.Error:
+        logger.exception("Message")
+    finally:
+        return results
+        db_conn.close()
