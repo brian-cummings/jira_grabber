@@ -32,7 +32,7 @@ CREATE TABLE public.jirauser
     id character varying(255) COLLATE pg_catalog."default" NOT NULL,
     displayname character varying(255) COLLATE pg_catalog."default" NOT NULL,
     email character varying(255) COLLATE pg_catalog."default" NOT NULL,
-    subscribed boolean,
+    subscribed boolean DEFAULT false,
     active boolean,
     updated timestamp with time zone,
     lastemailed timestamp with time zone,

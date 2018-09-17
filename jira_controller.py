@@ -59,7 +59,7 @@ else:
         get_jira_worklog.load_worklog(user_issue_key)
         logger.info("User specified worklog for {} completed".format(user_issue_key))
 
-if user_skip_update == False:
+if user_skip_update == False and user_issue_key is None:
     get_jira_users.load_users()
 
 utc_finish_datetime = pytz.utc.localize(datetime.datetime.utcnow())
