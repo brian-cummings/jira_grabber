@@ -30,8 +30,9 @@ def insert_issue(summary, issue_key, issue_type, status, project_key, epic_link,
                                 ON CONFLICT (IssueKey) DO UPDATE SET
                                 (Summary, IssueType, Status, ProjectKey, EpicLink, Resolution, 
                                 Created, Updated, Resolved, SystemModified) =
-                                (Excluded.Summary, Excluded.IssueType, Excluded.Status, Excluded.ProjectKey, Excluded.EpicLink, Excluded.Resolution, 
-                                Excluded.Created, Excluded.Updated, Excluded.Resolved, Excluded.SystemModified);"""
+                                (Excluded.Summary, Excluded.IssueType, Excluded.Status, Excluded.ProjectKey, 
+                                Excluded.EpicLink, Excluded.Resolution, Excluded.Created, Excluded.Updated, 
+                                Excluded.Resolved, Excluded.SystemModified);"""
 
         insert_data = (summary, issue_key, issue_type, status, project_key, epic_link, resolution, created, updated,
                        resolved, curr_datetime)
@@ -51,13 +52,13 @@ def insert_worklog(id, issue_key, comment, log_date, work_date, worker, seconds_
     utc_datetime = pytz.utc.localize(datetime.datetime.utcnow())
     curr_datetime = utc_datetime.astimezone(pytz.timezone("America/New_York"))
     issue_key = (issue_key).upper()
-
-    try:
-        db_cursor.execute("""INSERT INTO WORKLOG (Id, IssueKey, Comment, LogDate, WorkDate, Worker, SecondsWorked, 
+    SQL = """INSERT INTO WORKLOG (Id, IssueKey, Comment, LogDate, WorkDate, Worker, SecondsWorked, 
         SystemModified) VALUES (%s,%s,%s,%s,%s,%s,%s,%s) ON CONFLICT (Id) DO UPDATE SET (IssueKey, Comment, LogDate, 
         WorkDate, Worker, SecondsWorked, SystemModified) = (Excluded.IssueKey, Excluded.Comment, 
-        Excluded.LogDate, Excluded.WorkDate, Excluded.Worker, Excluded.SecondsWorked, Excluded.SystemModified);""",
-                          (id, issue_key, comment, log_date, work_date, worker, seconds_worked, curr_datetime))
+        Excluded.LogDate, Excluded.WorkDate, Excluded.Worker, Excluded.SecondsWorked, Excluded.SystemModified);"""
+
+    try:
+        db_cursor.execute(SQL, (id, issue_key, comment, log_date, work_date, worker, seconds_worked, curr_datetime))
         db_conn.commit()
 
     except db_conn.Error:
@@ -71,9 +72,9 @@ def insert_worklog(id, issue_key, comment, log_date, work_date, worker, seconds_
 def return_keys(period):
     db_conn = psycopg2.connect("host={} dbname={} user={} password={}".format(host, database, user, password))
     db_cursor = db_conn.cursor()
+    SQL = """SELECT IssueKey FROM ISSUE WHERE Updated >= now() - interval %s;"""
     try:
-        db_cursor.execute("""SELECT IssueKey FROM ISSUE WHERE Updated >= now() - interval %s;""",
-                          (period,))
+        db_cursor.execute(SQL, (period,))
         results = db_cursor.fetchall()
     except db_conn.Error:
         logger.exception("Message")
@@ -85,8 +86,9 @@ def return_keys(period):
 def return_last_update():
     db_conn = psycopg2.connect("host={} dbname={} user={} password={}".format(host, database, user, password))
     db_cursor = db_conn.cursor()
+    SQL = """SELECT MAX(Updated) as max_updated FROM ISSUE;"""
     try:
-        db_cursor.execute("""SELECT MAX(Updated) as max_updated FROM ISSUE;""")
+        db_cursor.execute(SQL)
 
         for max_updated, in db_cursor:
             results = max_updated
@@ -104,11 +106,11 @@ def insert_user(id, display_name, email, active):
     utc_datetime = pytz.utc.localize(datetime.datetime.utcnow())
     curr_datetime = utc_datetime.astimezone(pytz.timezone("America/New_York"))
     id = id.lower()
-
-    try:
-        db_cursor.execute("""INSERT INTO JIRAUSER (id, displayname, email, active, updated) VALUES (%s,%s,%s,%s,%s) 
+    SQL = """INSERT INTO JIRAUSER (id, displayname, email, active, updated) VALUES (%s,%s,%s,%s,%s) 
         ON CONFLICT (id) DO UPDATE SET (id, displayname, email, active, updated) = (Excluded.id, Excluded.displayname, 
-        Excluded.email, Excluded.active, Excluded.updated);""", (id, display_name, email, active, curr_datetime))
+        Excluded.email, Excluded.active, Excluded.updated);"""
+    try:
+        db_cursor.execute(SQL, (id, display_name, email, active, curr_datetime))
         db_conn.commit()
 
     except db_conn.Error:
@@ -122,10 +124,13 @@ def insert_user(id, display_name, email, active):
 def return_worklogs(worker,days):
     db_conn = psycopg2.connect("host={} dbname={} user={} password={}".format(host, database, user, password))
     db_cursor = db_conn.cursor()
+    neg_days = int(days) * -1
+    start_date = datetime.datetime.today() - datetime.timedelta(days=days)
+    SQL = "SELECT workdate::date, round(sum(secondsworked)/3600,1) as hoursworked FROM \
+        worklog WHERE worker = %s AND workdate between %s and now() \
+        GROUP BY workdate::date;"
     try:
-        db_cursor.execute("""SELECT workdate::date, round(sum(secondsworked)/3600,1) as hoursworked FROM 
-        worklog WHERE worker = %s AND workdate >= now() - interval %s 
-        GROUP BY workdate::date;""", (worker, days))
+        db_cursor.execute(SQL, (worker, start_date))
         results = db_cursor.fetchall()
 
     except db_conn.Error:
