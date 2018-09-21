@@ -75,7 +75,7 @@ if user_skip_update == False and user_issue_key is None:
             days_since_update = -1
         else:
             days_since_update = (utc_datetime - lastupdated).days
-        if days_since_update >= 7 or days_since_update == -1:
+        if days_since_update >= 1 or days_since_update == -1:
             send_email.send_recap_email(jid, name, email, days_since_update)
 
 utc_finish_datetime = pytz.utc.localize(datetime.datetime.utcnow())
