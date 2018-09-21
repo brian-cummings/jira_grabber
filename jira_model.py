@@ -138,6 +138,24 @@ def insert_user(id, display_name, email, active):
     return
 
 
+def update_user_emailedate(id):
+    db_conn = psycopg2.connect("host={} dbname={} user={} password={}".format(host, database, user, password))
+    db_cursor = db_conn.cursor()
+    utc_datetime = pytz.utc.localize(datetime.datetime.utcnow())
+    curr_datetime = utc_datetime.astimezone(pytz.timezone("America/New_York"))
+    id = id.lower()
+    SQL = """UPDATE jirauser SET lastemailed = %s WHERE id = %s;"""
+    try:
+        db_cursor.execute(SQL, (curr_datetime, id))
+        db_conn.commit()
+
+    except db_conn.Error:
+        db_conn.rollback()
+        logger.exception("Message")
+    finally:
+        db_conn.close()
+    return
+
 def return_worklogs(worker,days):
     db_conn = psycopg2.connect("host={} dbname={} user={} password={}".format(host, database, user, password))
     db_cursor = db_conn.cursor()
@@ -148,6 +166,22 @@ def return_worklogs(worker,days):
         GROUP BY workdate::date;"
     try:
         db_cursor.execute(SQL, (worker, start_date))
+        results = db_cursor.fetchall()
+
+    except db_conn.Error:
+        logger.exception("Message")
+    finally:
+        return results
+        db_conn.close()
+
+
+def return_subscribed_users():
+    db_conn = psycopg2.connect("host={} dbname={} user={} password={}".format(host, database, user, password))
+    db_cursor = db_conn.cursor()
+    SQL = "SELECT id, displayname, email, lastemailed FROM jirauser WHERE subscribed = true and \
+    (lastemailed < now() - interval '-7 days' or lastemailed is null);"
+    try:
+        db_cursor.execute(SQL)
         results = db_cursor.fetchall()
 
     except db_conn.Error:
