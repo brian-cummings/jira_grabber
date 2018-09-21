@@ -1,0 +1,19 @@
+[jira_config]
+username = sample
+secret_token = token
+server = https://server
+
+[postgresql]
+host = server
+database = jira
+user = username
+password = passwordtext
+
+[postgresql-local]
+host = localhost
+database = jira
+user = postgres
+password = postgres
+
+[sparkpost]
+key = specialkey

@@ -8,6 +8,7 @@
 
 # Config files
 *.ini
+*.ini.example
 
 # User-specific stuff
 .idea/
