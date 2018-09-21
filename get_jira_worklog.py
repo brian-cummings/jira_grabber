@@ -20,6 +20,8 @@ def load_worklog(issue_key):
 
         worklogs = jira.worklogs(issue_key)
 
+        jira_model.delete_worklog(issue_key)
+
         for w in worklogs:
 
             time_spent = w.timeSpentSeconds
