@@ -31,7 +31,7 @@ user_send_emails_only = args.email_only
 utc_datetime = pytz.utc.localize(datetime.datetime.utcnow())
 curr_datetime = utc_datetime.astimezone(pytz.timezone("America/New_York"))
 
-if user_send_emails_only is None:
+if user_send_emails_only is not True:
 
     if user_hours is None:
         user_hours = -1
@@ -71,11 +71,13 @@ if user_skip_update == False and user_issue_key is None:
     subscribers = jira_model.return_subscribed_users()
 
     for jid, name, email, lastupdated in subscribers:
+        dsu_int = 0
         if lastupdated is None:
-            days_since_update = -1
+            days_since_update = None
+            dsu_int = -1
         else:
             days_since_update = (utc_datetime - lastupdated).days
-        if days_since_update >= 1 or days_since_update == -1:
+        if dsu_int >= 7 or dsu_int == -1:
             send_email.send_recap_email(jid, name, email, days_since_update)
 
 utc_finish_datetime = pytz.utc.localize(datetime.datetime.utcnow())

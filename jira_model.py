@@ -1,4 +1,5 @@
 import psycopg2
+from psycopg2 import sql
 import datetime
 import configparser
 import pytz
@@ -156,20 +157,23 @@ def update_user_emailedate(id):
         db_conn.close()
     return
 
-def return_worklogs(worker,days):
+def return_worklogs(worker,days=None):
     db_conn = psycopg2.connect("host={} dbname={} user={} password={}".format(host, database, user, password))
     db_cursor = db_conn.cursor()
-    neg_days = int(days) * -1
-    start_date = datetime.datetime.today() - datetime.timedelta(days=days)
+    if days is not None:
+        start_date = datetime.datetime.today() - datetime.timedelta(days=days)
+        date_limit = "AND workdate >= workdate - interval '{} day'".format(days)
+    else:
+        date_limit = ''
     SQL = "SELECT workdate::date, round(sum(secondsworked)/3600,1) as hoursworked FROM \
-        worklog WHERE worker = %s AND workdate between %s and now() \
-        GROUP BY workdate::date;"
+        worklog WHERE worker = '{}' {} GROUP BY workdate::date ORDER BY workdate::date desc;"
     try:
-        db_cursor.execute(SQL, (worker, start_date))
+        db_cursor.execute(sql.SQL(SQL.format(worker, date_limit)))
         results = db_cursor.fetchall()
 
     except db_conn.Error:
         logger.exception("Message")
+
     finally:
         return results
         db_conn.close()
@@ -178,8 +182,7 @@ def return_worklogs(worker,days):
 def return_subscribed_users():
     db_conn = psycopg2.connect("host={} dbname={} user={} password={}".format(host, database, user, password))
     db_cursor = db_conn.cursor()
-    SQL = "SELECT id, displayname, email, lastemailed FROM jirauser WHERE subscribed = true and \
-    (lastemailed < now() - interval '-7 days' or lastemailed is null);"
+    SQL = "SELECT id, displayname, email, lastemailed FROM jirauser WHERE subscribed = true;"
     try:
         db_cursor.execute(SQL)
         results = db_cursor.fetchall()

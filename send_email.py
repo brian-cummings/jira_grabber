@@ -23,15 +23,17 @@ sp_base_uri = sp_config['sparkpost']['base_uri']
 sp = SparkPost(sp_apikey, base_uri=sp_base_uri)
 
 
-def send_recap_email(user,username,email,days):
+def send_recap_email(user,username,email,days=None):
 
     table = ""
     results = jira_model.return_worklogs(user, days)
     email_body = '<p>Hello ' + username + ',</p>'
-    if days == -1:
+    if days is None:
         results_intro_text = '<p>This is your first email! Here are your results since you started tracking:</p>'
+        subject_text = 'Your First Worklog Summary'
     else:
         results_intro_text = '<p>Here are your results for the past ' + str(days) + ' days:</p>'
+        subject_text = 'Your ' + str(days) + ' day Jira Worklog'
     result_count = sum(1 for i in results)
     if result_count > 1:
         for date, amount in results:
@@ -61,7 +63,7 @@ def send_recap_email(user,username,email,days):
         ],
         html=email_body,
         from_email=sp_email,
-        subject='Your ' + str(days) + ' day Jira Worklog',
+        subject=subject_text,
         track_opens=True,
         track_clicks=True,
         reply_to=sp_noreply
