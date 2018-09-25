@@ -43,7 +43,6 @@ if user_send_emails_only is not True:
         logger.info("Received user input of {} hours".format(user_hours))
         hours_since_update = user_hours
 
-
     logger.info("Looking for updates in the past {} hours".format(hours_since_update))
 
     if user_issue_key is None:

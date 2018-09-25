@@ -182,7 +182,7 @@ def return_worklogs(worker,days=None):
 def return_subscribed_users():
     db_conn = psycopg2.connect("host={} dbname={} user={} password={}".format(host, database, user, password))
     db_cursor = db_conn.cursor()
-    SQL = "SELECT id, displayname, email, lastemailed FROM jirauser WHERE subscribed = true;"
+    SQL = "SELECT id, displayname, email, lastemailed FROM jirauser WHERE subscribed = true and active = true;"
     try:
         db_cursor.execute(SQL)
         results = db_cursor.fetchall()
