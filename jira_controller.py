@@ -76,8 +76,12 @@ if user_skip_update == False and user_issue_key is None:
             dsu_int = -1
         else:
             days_since_update = (utc_datetime - lastupdated).days
+            dsu_int = days_since_update
         if dsu_int >= 7 or dsu_int == -1:
+            logger.info("Sending email to {}".format(email))
             send_email.send_recap_email(jid, name, email, days_since_update)
+        else:
+            logger.info("Not sending email to {} | {} | {}".format(jid, days_since_update, dsu_int))
 
 utc_finish_datetime = pytz.utc.localize(datetime.datetime.utcnow())
 finish_datetime = utc_finish_datetime.astimezone(pytz.timezone("America/New_York"))
