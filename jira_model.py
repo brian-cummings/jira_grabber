@@ -157,18 +157,21 @@ def update_user_emailedate(id):
         db_conn.close()
     return
 
+
 def return_worklogs(worker,days=None):
     db_conn = psycopg2.connect("host={} dbname={} user={} password={}".format(host, database, user, password))
     db_cursor = db_conn.cursor()
+
     if days is not None:
-        start_date = datetime.datetime.today() - datetime.timedelta(days=days)
-        date_limit = "AND workdate >= workdate - interval '{} day'".format(days)
+        date_limit = "AND workdate >= now() - interval '{} day'".format(days)
     else:
         date_limit = ''
-    SQL = "SELECT workdate::date, round(sum(secondsworked)/3600,1) as hoursworked FROM \
-        worklog WHERE worker = '{}' {} GROUP BY workdate::date ORDER BY workdate::date desc;"
+    SQLtext = "SELECT workdate::date, round(sum(secondsworked)/3600,1) as hoursworked FROM \
+        worklog WHERE worker = '{}' {} GROUP BY workdate::date ORDER BY workdate::date desc;"\
+        .format(worker, date_limit)
+
     try:
-        db_cursor.execute(sql.SQL(SQL.format(worker, date_limit)))
+        db_cursor.execute(sql.SQL(SQLtext))
         results = db_cursor.fetchall()
 
     except db_conn.Error:
